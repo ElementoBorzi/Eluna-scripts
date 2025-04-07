@@ -18,6 +18,7 @@ A customizable racial abilities system for TrinityCore servers using Eluna and A
   - NPC interaction can be enabled/disabled
   - Chat commands (/rui, /racialui) can be enabled/disabled
   - Movable world icon can be enabled/disabled
+  - **Client-side Access**: Requires client-side files for full functionality
 
 ## Requirements
 
@@ -28,9 +29,12 @@ A customizable racial abilities system for TrinityCore servers using Eluna and A
 ## Installation
 
 1. Copy the content inside `server` folder to your `lua_scripts/AIO_Server` directory
-2. Import the included SQL files into your world database:   [racial_tables.sql](racial_tables.sql) to get all the database tables and data. or go to Database Structure and create the tables manually. with that.
+2. Copy the content inside `client` folder to your `interface/AddOns` directory. This is optional but recommended for full functionality. Most users will need to apply a patch.
 
-3. Configure the settings in `racialServer.lua`:
+   - **Note**: The client-side files are required for server-side functionality. You can choose to ignore them if you only want the server-side features. You will need to edit the code to make it work without client-side files.
+3. Import the included SQL files into your world database:   [racial_tables.sql](racial_tables.sql) to get all the database tables and data. or go to Database Structure and create the tables manually. with that.
+
+4. Configure the settings in `racialServer.lua`:
 
    ```lua
    local IsNpc = true -- Enable/disable NPC interaction
