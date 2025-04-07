@@ -524,15 +524,6 @@ function RacialUI.createTabButton(id, text, icon, onClick, OnEnter, OnLeave)
 	return button
 end
 
--- Create a text and numers to display active racial spells
-local activeRacialText = mainFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-activeRacialText:SetPoint("TOPLEFT", 20, -30)
-activeRacialText:SetText("Active racial spells: ")
-
-local activeRacialNumber = mainFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-activeRacialNumber:SetPoint("TOPLEFT", activeRacialText, "TOPRIGHT", 0, 0)
--- activeRacialNumber:SetText(totalMaxActive .. "/" .. totalMaxActive)
-
 function RacialUI.IsTotalMaxActive()
 	-- Initialize a variable to keep track of the total maximum number of active spells
 	local totalMaxActive = 0
@@ -556,7 +547,7 @@ function RacialUI.activeRacialSpells()
 			end
 		end
 	end
-	activeRacialNumber:SetText(count .. "/" .. RacialUI.IsTotalMaxActive())
+	-- activeRacialNumber:SetText(count .. "/" .. RacialUI.IsTotalMaxActive())
 end
 
 local itemTooltip = CreateFrame("GameTooltip", "itemTooltip", UIParent, "GameTooltipTemplate")
@@ -687,7 +678,7 @@ function RacialUI.createItemButton(parent, index, id, name, text, icon, itemType
 						checkActive = IsSpellKnown(spellInfo.id, false)
 					end
 				elseif spellInfo.itemType == "item" then
-					checkActive = GetItemCount(spellInfo.id) > 0
+					checkActive = GetItemCount(spellInfo.id, true) > 0
 				end
 				if checkActive then
 					currentActiveCount = currentActiveCount + 1
@@ -709,7 +700,7 @@ function RacialUI.createItemButton(parent, index, id, name, text, icon, itemType
 				isCurrentlyActive = IsSpellKnown(id, false)
 			end
 		elseif itemType == "item" then
-			isCurrentlyActive = GetItemCount(id) > 0
+			isCurrentlyActive = GetItemCount(id, true) > 0
 		end
 		self.active = isCurrentlyActive -- Ensure self.active is up-to-date before logic
 
@@ -718,6 +709,9 @@ function RacialUI.createItemButton(parent, index, id, name, text, icon, itemType
 			if not isCurrentlyActive then
 				if currentActiveCount < maximumActive then
 					AIO.Handle("RACIAL_SERVER", "learnFeature", id, itemType)
+					print(string.format("Learning %s", text))
+
+					print(string.format("Item Type: %s", itemType))
 					-- Optimistically update state, server will confirm
 					self.active = true
 					table.insert(RacialUI.State.activeRacialSpells, id)
@@ -813,7 +807,7 @@ function RacialUI.createItemButton(parent, index, id, name, text, icon, itemType
 					isActive = IsSpellKnown(id, false)
 				end
 			elseif itemType == "item" then
-				isActive = GetItemCount(id) > 0
+				isActive = GetItemCount(id, true) > 0
 			end
 
 			-- Check if player can afford to unlearn if spell is active
@@ -823,7 +817,7 @@ function RacialUI.createItemButton(parent, index, id, name, text, icon, itemType
 					local playerMoney = GetMoney()
 					canAffordUnlearn = playerMoney >= cost
 				elseif costType == "item" then
-					local itemCount = GetItemCount(cost)
+					local itemCount = GetItemCount(cost, true)
 					canAffordUnlearn = itemCount > 0 -- Check if player has at least one required item
 				elseif costType == "spell" then
 					canAffordUnlearn = IsSpellKnown(cost)
@@ -847,7 +841,7 @@ function RacialUI.createItemButton(parent, index, id, name, text, icon, itemType
 						elseif spellInfo.id ~= 50300 and IsSpellKnown(spellInfo.id, false) then
 							activeCount = activeCount + 1
 						end
-					elseif spellInfo.itemType == "item" and GetItemCount(spellInfo.id) > 0 then
+					elseif spellInfo.itemType == "item" and GetItemCount(spellInfo.id, true) > 0 then
 						activeCount = activeCount + 1
 					end
 				end
@@ -920,7 +914,7 @@ function RacialUI.createItemButton(parent, index, id, name, text, icon, itemType
 				isActive = IsSpellKnown(id, false)
 			end
 		elseif itemType == "item" then
-			isActive = GetItemCount(id) > 0
+			isActive = GetItemCount(id, true) > 0
 		end
 
 		-- Update button state and alpha
@@ -1127,7 +1121,7 @@ function RacialUI.resetSpells()
 					end
 				end
 			elseif spellInfo.itemType == "item" then
-				local itemCount = GetItemCount(spellInfo.id)
+				local itemCount = GetItemCount(spellInfo.id, true)
 				if itemCount > 0 then
 					AIO.Handle("RACIAL_SERVER", "unLearnAllRacials", spellInfo.id, spellInfo.itemType)
 				end
@@ -1167,7 +1161,7 @@ function RacialUI.calculateTotalResetCosts()
 					isActive = IsSpellKnown(spellInfo.id, false)
 				end
 			elseif spellInfo.itemType == "item" then
-				isActive = GetItemCount(spellInfo.id) > 0
+				isActive = GetItemCount(spellInfo.id, true) > 0
 			end
 
 			-- If active, add its cost
@@ -1287,7 +1281,7 @@ resetButton:SetScript("OnEnter", function(self)
 			costString = costString .. itemName
 
 			-- Check if player has the item
-			local playerCount = GetItemCount(amount)
+			local playerCount = GetItemCount(amount, true)
 			canAfford = playerCount > 0
 
 			GameTooltip:AddLine(costString, canAfford and 0 or 1, canAfford and 1 or 0, 0)
@@ -1328,7 +1322,7 @@ resetButton:SetScript("OnEnter", function(self)
 							isActive = IsSpellKnown(spellInfo.id)
 						end
 					elseif spellInfo.itemType == "item" then
-						isActive = GetItemCount(spellInfo.id) > 0
+						isActive = GetItemCount(spellInfo.id, true) > 0
 					end
 
 					-- If active, add its cost
@@ -1376,7 +1370,7 @@ resetButton:SetScript("OnEnter", function(self)
 			GameTooltip:AddLine("Required Items:", 1, 0.82, 0)
 			for itemId, count in pairs(requiredItems) do
 				local itemName = GetItemInfo(itemId) or ("Item #" .. itemId)
-				local playerCount = GetItemCount(itemId)
+				local playerCount = GetItemCount(itemId, true)
 				local color = playerCount >= count and "|cFF00FF00" or "|cFFFF0000"
 				GameTooltip:AddLine(string.format("%s%s x%d (%d/%d)", color, itemName, count, playerCount, count))
 			end
@@ -1450,7 +1444,7 @@ function RacialUI.updateCategoryCounters()
 					isActive = IsSpellKnown(spellInfo.id, false)
 				end
 			elseif spellInfo.itemType == "item" then
-				isActive = GetItemCount(spellInfo.id) > 0
+				isActive = GetItemCount(spellInfo.id, true) > 0
 			end
 
 			if isActive then

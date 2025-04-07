@@ -192,30 +192,7 @@ local function SendRacialSpellsToClient(player)
 	AIO.Handle(player, "RACIAL_CLIENT", "ReceiveRacialSpells", spells)
 end
 
-local function OnElunaReload(event)
-	local players = GetPlayersInWorld() -- get all connected players
-	for i, player in ipairs(players) do
-		SendRacialSpellsToClient(player) -- send the racial spells data to each player
-	end
-end
 
-RegisterServerEvent(16, OnElunaReload) -- register the Eluna reload handler
-
--- setup so that on login it send the data to the player
-local function OnPlayerLogin(event, player)
-	SendRacialSpellsToClient(player) -- send the racial spells data to the player
-	SendUnifiedCostSettings(player) -- send unified cost settings to the player
-end
-
-RegisterPlayerEvent(3, OnPlayerLogin) -- register the player login handler
-
-local function hasRequiredItem(player)
-	if enableItem then
-		return player:HasItem(itemRequired)
-	else
-		return true
-	end
-end
 
 function racialHandler.learnFeature(player, spellId, itemType)
 	if player:IsInCombat() and player:InBattleground() == true then
@@ -223,7 +200,6 @@ function racialHandler.learnFeature(player, spellId, itemType)
 		return false
 	end
 
-	-- Simple check if player already has the spell/item
 	if itemType == "spell" then
 		if player:HasSpell(spellId) then
 			player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You already have this spell!")
@@ -237,10 +213,16 @@ function racialHandler.learnFeature(player, spellId, itemType)
 		end
 		player:LearnSpell(spellId)
 		player:AdvanceAllSkills(999)
-		if professionSpellIds[spellId] then
-			for _, v in pairs(professionSpellIds[spellId]) do
-				player:LearnSpell(v)
+		if ProfessionSpellIds[spellId] then
+			local spellCount = #ProfessionSpellIds[spellId]
+			for _, spellToLearn in pairs(ProfessionSpellIds[spellId]) do
+				player:LearnSpell(spellToLearn)
 			end
+			player:SendBroadcastMessage(
+				string.format("|cff00ff00[System]|r Learned profession and %d related spells successfully!", spellCount)
+			)
+		else
+			player:SendBroadcastMessage("|cff00ff00[System]|r Learned profession successfully!")
 		end
 	elseif itemType == "item" then
 		if player:HasItem(spellId) then
@@ -252,83 +234,103 @@ function racialHandler.learnFeature(player, spellId, itemType)
 	player:SaveToDB()
 end
 
+-- Utility function to check if player has an item, including in the bank
+local function PlayerHasItemIncludingBank(player, itemId, count)
+    count = count or 1 -- Default count to 1 if not provided
+    return player:HasItem(itemId, count, true)
+end
+
 function racialHandler.unlearnFeature(player, spellId, itemType)
-	if player:IsInCombat() and player:InBattleground() == true then
-		player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You can't use this while in combat!")
-		return false
-	end
+    if player:IsInCombat() and player:InBattleground() == true then
+        player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You can't use this while in combat!")
+        return false
+    end
 
-	-- Get cost information from database
-	local query = WorldDBQuery(string.format("SELECT costType, cost FROM custom_racial_spells WHERE id = %d", spellId))
-	if not query then
-		player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000Error: Cost information not found!")
-		return false
-	end
+    -- Get cost information from database
+    local query = WorldDBQuery(string.format("SELECT costType, cost FROM custom_racial_spells WHERE id = %d", spellId))
+    if not query then
+        player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000Error: Cost information not found!")
+        return false
+    end
 
-	local costType = query:GetString(0)
-	local cost = query:GetUInt32(1)
+    local costType = query:GetString(0)
+    local cost = query:GetUInt32(1)
 
-	-- Check if player can afford the cost
-	if costType == "gold" then
-		if player:GetCoinage() < cost then
-			player:SendBroadcastMessage(
-				string.format(
-					"|cff00ff00[System]|r |cffff0000You need %dg %ds %dc to unlearn this!",
-					math.floor(cost / 10000),
-					math.floor((cost % 10000) / 100),
-					cost % 100
-				)
-			)
-			return false
-		end
-		player:ModifyMoney(-cost)
-	elseif costType == "item" then
-		if not player:HasItem(cost) then
-			local itemName = GetItemLink(cost) or ("Item #" .. cost)
-			player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You need " .. itemName .. " to unlearn this!")
-			return false
-		end
-		player:RemoveItem(cost, 1)
-	elseif costType == "spell" then
-		if not player:HasSpell(cost) then
-			local spellName = GetSpellLink(cost) or ("Spell #" .. cost)
-			player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You need " .. spellName .. " to unlearn this!")
-			return false
-		end
-		player:RemoveSpell(cost)
-	end
+    -- Check if player can afford the cost
+    if costType == "gold" then
+        if player:GetCoinage() < cost then
+            player:SendBroadcastMessage(
+                string.format(
+                    "|cff00ff00[System]|r |cffff0000You need %dg %ds %dc to unlearn this!",
+                    math.floor(cost / 10000),
+                    math.floor((cost % 10000) / 100),
+                    cost % 100
+                )
+            )
+            return false
+        end
+        player:ModifyMoney(-cost)
+    elseif costType == "item" then
+        -- Use the utility function to check bank as well
+        if not PlayerHasItemIncludingBank(player, cost, 1) then
+            local itemName = GetItemLink(cost) or ("Item #" .. cost)
+            player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You need " .. itemName .. " to unlearn this!")
+            return false
+        end
+        -- RemoveItem checks bank automatically if the item isn't found in bags first
+        player:RemoveItem(cost, 1)
+    elseif costType == "spell" then
+        if not player:HasSpell(cost) then
+            local spellName = GetSpellLink(cost) or ("Spell #" .. cost)
+            player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You need " .. spellName .. " to unlearn this!")
+            return false
+        end
+        player:RemoveSpell(cost)
+    end
 
-	-- Now proceed with unlearning
-	if itemType == "spell" then
-		if not player:HasSpell(spellId) then
-			player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this spell to unlearn!")
-			return false
-		end
-		player:RemoveSpell(spellId)
-	elseif itemType == "profession" then
-		if spellId == 50300 then
-			if not player:HasSpell(2383) then
-				player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this profession to unlearn!")
-				return false
-			end
-			player:RemoveSpell(50300)
-			RacialUI.unlearnSkill("Herbalism")
-		else
-			if not player:HasSpell(spellId) then
-				player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this profession to unlearn!")
-				return false
-			end
-			player:RemoveSpell(spellId)
-			RacialUI.unlearnSkill(GetSpellInfo(spellId))
-		end
-	elseif itemType == "item" then
-		if not player:HasItem(spellId) then
-			player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this item to remove!")
-			return false
-		end
-		player:RemoveItem(spellId, 1)
-	end
-	player:SaveToDB()
+    -- Now proceed with unlearning
+    if itemType == "spell" then
+        if not player:HasSpell(spellId) then
+            player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this spell to unlearn!")
+            return false
+        end
+        player:RemoveSpell(spellId)
+    elseif itemType == "profession" then
+        -- Assuming ProfessionSpellIds is defined elsewhere
+        local professionSpells = ProfessionSpellIds and ProfessionSpellIds[spellId] or {}
+        if spellId == 50300 then -- Special case for Herbalism?
+            if not player:HasSpell(2383) then -- Check for a specific related spell
+                player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this profession to unlearn!")
+                return false
+            end
+            player:RemoveSpell(50300)
+            player:RemoveSpell(2383) -- Remove the Herbalism spell
+            player:AbandonSkill(GetSpellInfo(50300)) -- Abandon skill by name
+        else
+            if not player:HasSpell(spellId) then
+                player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this profession to unlearn!")
+                return false
+            end
+            player:RemoveSpell(spellId)
+            -- Remove related profession spells if any exist
+            for _, relatedSpellId in ipairs(professionSpells) do
+                player:RemoveSpell(relatedSpellId)
+            end
+            player:AbandonSkill(GetSpellInfo(spellId)) -- Abandon skill by name
+            player:SendBroadcastMessage(
+                "|cff00ff00[System]|r Successfully unlearned the profession and its related spells."
+            )
+        end
+    elseif itemType == "item" then
+        -- Use the utility function to check bank as well before attempting removal
+        if not PlayerHasItemIncludingBank(player, spellId, 1) then
+            player:SendBroadcastMessage("|cff00ff00[System]|r |cffff0000You don't have this item to remove!")
+            return false
+        end
+        -- RemoveItem checks bank automatically if the item isn't found in bags first
+        player:RemoveItem(spellId, 1)
+    end
+    player:SaveToDB()
 end
 
 local function SendUnifiedCostSettings(player)
@@ -338,11 +340,6 @@ local function SendUnifiedCostSettings(player)
 		costType = unifiedCostType,
 		amount = unifiedCostAmount,
 	}
-
-	-- print("Sending unified cost settings to " .. player:GetName() .. ":")
-	-- print("  Enabled: " .. tostring(settings.enabled))
-	-- print("  Type: " .. settings.costType)
-	-- print("  Amount: " .. settings.amount)
 
 	AIO.Handle(player, "RACIAL_CLIENT", "ReceiveUnifiedCostSettings", settings)
 end
@@ -653,6 +650,23 @@ function racialHandler.resetAllRacials(player)
 	SendUnifiedCostSettings(player)
 	return true
 end
+
+local function OnElunaReload(event)
+	local players = GetPlayersInWorld() -- get all connected players
+	for i, player in ipairs(players) do
+		SendRacialSpellsToClient(player) -- send the racial spells data to each player
+	end
+end
+
+RegisterServerEvent(33, OnElunaReload) -- register the Eluna reload handler
+
+-- setup so that on login it send the data to the player
+local function OnPlayerLogin(event, player)
+	SendRacialSpellsToClient(player) -- send the racial spells data to the player
+	SendUnifiedCostSettings(player) -- send unified cost settings to the player
+end
+
+RegisterPlayerEvent(3, OnPlayerLogin) -- register the player login handler
 
 -- Add a function to handle the admin command for updating all players
 local function updateAllPlayers(event, player, command)

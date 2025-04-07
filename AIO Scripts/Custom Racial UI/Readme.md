@@ -27,7 +27,7 @@ A customizable racial abilities system for TrinityCore servers using Eluna and A
 
 ## Installation
 
-1. Copy the `RacialUI` folder to your `lua_scripts/AIO_Server` directory
+1. Copy the content inside `server` folder to your `lua_scripts/AIO_Server` directory
 2. Import the included SQL files into your world database:   [racial_tables.sql](racial_tables.sql) to get all the database tables and data. or go to Database Structure and create the tables manually. with that.
 
 3. Configure the settings in `racialServer.lua`:

@@ -12,7 +12,7 @@ CREATE TABLE `custom_racial_spells` (
     `id` INT(10) NOT NULL,
     `category` INT(10) NULL DEFAULT NULL,
     `name` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
-    `itemType` ENUM('spell', 'item') NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+    `itemType` ENUM('spell', 'item', 'profession') NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
     `costType` ENUM('gold', 'item', 'spell') NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
     `cost` INT(10) NULL DEFAULT NULL,
     PRIMARY KEY (`id`) USING BTREE
@@ -31,9 +31,8 @@ INSERT INTO `custom_racial_tabs` (`id`, `name`, `maxActiveSpells`, `icon`) VALUE
 (7, 'Secondary skill', 3, 'inv_misc_gear_01'),
 
 -- Insert racial spells data and crafting
-INSERT INTO `custom_racial_spells` (`id`, `category`, `itemType`, `costType`, `cost`) VALUES
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (20577, 1, NULL, 'spell', 'gold', 10000);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (2481, 1, NULL, 'spell', 'gold', 10000);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (2481, 1, NULL, 'spell', 'item', 6265);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (20594, 1, NULL, 'spell', 'gold', 10000);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (26297, 1, NULL, 'spell', 'gold', 10000);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (58984, 1, NULL, 'spell', 'gold', 10000);
@@ -45,7 +44,7 @@ INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costT
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (59542, 1, NULL, 'spell', 'gold', 10000);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (20549, 1, NULL, 'spell', 'gold', 10000);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (822, 2, NULL, 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (6562, 2, NULL, 'spell', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (6562, 2, NULL, 'spell', 'gold', 1);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (5227, 2, NULL, 'spell', 'gold', 100);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (20598, 2, NULL, 'spell', 'gold', 100);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (20599, 2, NULL, 'spell', 'gold', 100);
@@ -80,16 +79,18 @@ INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costT
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (39505, 5, '', 'item', 'gold', 100);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (44452, 5, '', 'item', 'gold', 100);
 INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (20815, 5, '', 'item', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (50300, 6, 'Herbalism', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (50305, 6, 'Skinning', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (50310, 6, 'Mining', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51302, 6, 'Leatherworking', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51304, 6, 'Alchemy', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51306, 6, 'Engineering', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51309, 6, 'Tailoring', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51311, 6, 'Jewelcrafting', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51313, 6, 'Enchanting', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51300, 6, 'Blacksmithing', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (45542, 7, 'First aid', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51294, 7, 'Fishing', 'spell', 'gold', 100);
-INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51296, 7, 'Cooking', 'spell', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (50300, 6, 'Herbalism', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (50305, 6, 'Skinning', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (50310, 6, 'Mining', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51302, 6, 'Leatherworking', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51304, 6, 'Alchemy', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51306, 6, 'Engineering', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51309, 6, 'Tailoring', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51311, 6, 'Jewelcrafting', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51313, 6, 'Enchanting', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51300, 6, 'Blacksmithing', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (45542, 7, 'First aid', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51294, 7, 'Fishing', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (51296, 7, 'Cooking', 'profession', 'gold', 100);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (6265, 8, 'PogShard', 'item', 'gold', 33333);
+INSERT INTO `custom_racial_spells` (`id`, `category`, `name`, `itemType`, `costType`, `cost`) VALUES (56808, 8, 'Adrenaline rush', 'spell', 'gold', 100);
