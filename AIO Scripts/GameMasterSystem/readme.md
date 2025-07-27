@@ -25,14 +25,13 @@ lua_scripts/
 ```
 
 <div style="display: flex; gap: 10px;">
-  <img src="src/assets/2024-10-20-16-04-05.png" alt="Game Master UI" style="width: 25%;">
-  <img src="src/assets/2024-10-20-16-00-51.png" alt="Game Master UI1" style="width: 25%;">
-  <img src="src/assets/2024-10-20-16-03-08.png" alt="Game Master UI2" style="width: 25%;">
+  <img src="src/assets/2025-07-27-17-49-44.png" alt="Game Master UI" style="width: 25%;">
+  <img src="src/assets/2025-07-27-17-50-19.png" alt="Game Master UI1" style="width: 25%;">
+  <img src="src/assets/2025-07-27-17-51-23.png" alt="Game Master UI2" style="width: 25%;">
+  <img src="src/assets/2025-07-27-17-52-10.png" alt="Game Master UI2" style="width: 25%;">![](2025-07-27-17-52-10.png)
 </div>
 
-[video new version](https://streamable.com/8qgjde)
 
-[video old version](https://streamable.com/e76v5t)
 
 # Search Guide for Game Objects and NPC Types
 
