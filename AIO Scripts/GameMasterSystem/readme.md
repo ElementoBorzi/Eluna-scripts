@@ -33,7 +33,7 @@ lua_scripts/AIO_Server/GameMasterUI/
 Make sure these AIO core files exist in your `AIO_Server` directory:
 - `AIO.lua` - Core AIO framework
 - `UIStyleLibraryServer.lua` - Server-side UI library
-- `AIO_UIStyleLibraryClient.lua` - Client-side UI library
+You can find `AIO_UIStyleLibraryClient.lua` here: [AIO_UIStyleLibraryClient.lua on GitHub](https://github.com/Isidorsson/Eluna-scripts/blob/master/AIO%20Scripts/AIO_UIStyleLibraryClient.lua)
 
 ### 3. Database Setup
 
