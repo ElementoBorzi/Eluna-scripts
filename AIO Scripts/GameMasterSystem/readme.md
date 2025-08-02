@@ -3,6 +3,7 @@
 tldr: place GameMasterUI in `lua_scripts\AIO_Server` like `lua_scripts\AIO_Server\GameMasterUI` you also need the two files 
 You can find `AIO_UIStyleLibraryClient.lua` here: [AIO_UIStyleLibraryClient.lua on GitHub](https://github.com/Isidorsson/Eluna-scripts/blob/master/AIO%20Scripts/AIO_UIStyleLibraryClient.lua)
 You can find `UIStyleLibraryServer.lua` here: [AIO_UIStyleLibraryClient.lua on GitHub](https://github.com/Isidorsson/Eluna-scripts/blob/master/AIO%20Scripts/AIO_UIStyleLibraryClient.lua)
+Both of them should be place in `lua_scripts\AIO_Server` 
 
 A comprehensive in-game Game Master management interface for TrinityCore servers using the AIO (AddOn In-game Organizer) framework.
 
