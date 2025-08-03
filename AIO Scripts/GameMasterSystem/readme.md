@@ -1,124 +1,134 @@
-# Game master UI
+# GameMasterUI for TrinityCore 3.3.5
 
-## Requirements
+tldr: place GameMasterUI in `lua_scripts\AIO_Server` like `lua_scripts\AIO_Server\GameMasterUI` you also need the two files 
+You can find `AIO_UIStyleLibraryClient.lua` here: [AIO_UIStyleLibraryClient.lua on GitHub](https://github.com/Isidorsson/Eluna-scripts/blob/master/AIO%20Scripts/AIO_UIStyleLibraryClient.lua)
+You can find `UIStyleLibraryServer.lua` here: [AIO_UIStyleLibraryClient.lua on GitHub](https://github.com/Isidorsson/Eluna-scripts/blob/master/AIO%20Scripts/AIO_UIStyleLibraryClient.lua)
+Both of them should be place in `lua_scripts\AIO_Server` 
 
-Require Eluna and AIO.
-Require that you have dbc file gameobjectdisplayinfo, spellvisualeffectname inside the db. I HIGHLY RECOMMEND TO ADD EVERY DBC TO YOUR DB.
+A comprehensive in-game Game Master management interface for TrinityCore servers using the AIO (AddOn In-game Organizer) framework.
+
+## Features
+
+- **NPC Management**: Search, spawn, and manage NPCs
+- **Item Management**: Search, add items, and manage inventories
+- **Spell Management**: Search and manage spells
+- **Player Management**: Manage player accounts, characters, and permissions
+- **Ban System**: Comprehensive ban management interface
+- **Model Preview**: 3D model viewer for NPCs and items
+- **Context Menus**: Right-click context menus for quick actions
+
+## Prerequisites
+
+- TrinityCore or AzerothCore 3.3.5
+- Eluna Lua Engine installed and working
+- AIO framework (included in most Eluna packages)
+- MySQL/MariaDB database
 
 ## Installation
 
-if you have issue adding dbc to db try use [stoneharry spell editor](https://github.com/stoneharry/WoW-Spell-Editor) worked for me.
+### 1. Copy Files
 
-## Visual aGuide
-
-1. Navigate to your server's `lua_scripts/AIO_Server` directory.
-2. Place the `gameMasterClient.lua` and `gameMasterServer.lua` files in this directory.
-
-Here's a visual representation:
-
-```plaintext
-lua_scripts/
-└── AIO_Server/
-  ├── GameMasterSystem/
-  │   ├── gameMasterClient.lua
-  │   └── gameMasterServer.lua
+Copy the entire `GameMasterUI` folder to your server's Lua scripts directory:
+```
+lua_scripts/AIO_Server/GameMasterUI/
 ```
 
-<div style="display: flex; gap: 10px;">
-  <img src="src/assets/2024-10-20-16-04-05.png" alt="Game Master UI" style="width: 25%;">
-  <img src="src/assets/2024-10-20-16-00-51.png" alt="Game Master UI1" style="width: 25%;">
-  <img src="src/assets/2024-10-20-16-03-08.png" alt="Game Master UI2" style="width: 25%;">
-</div>
+### 2. Ensure AIO Framework
 
-[video new version](https://streamable.com/8qgjde)
+Make sure these AIO core files exist in your `AIO_Server` directory:
+- `AIO.lua` - Core AIO framework
+- `UIStyleLibraryServer.lua` - Server-side UI library
+You can find `AIO_UIStyleLibraryClient.lua` here: [AIO_UIStyleLibraryClient.lua on GitHub](https://github.com/Isidorsson/Eluna-scripts/blob/master/AIO%20Scripts/AIO_UIStyleLibraryClient.lua)
 
-[video old version](https://streamable.com/e76v5t)
+### 3. Database Setup
 
-# Search Guide for Game Objects and NPC Types
+Require a spell dbc file to be present in your database. Required for spell management features.
 
-To perform a search for game object types or NPC types, you need to specify the type in parentheses (e.g., `(beast)`). Below are the available types you can use in your searches.
+### 4. Server Configuration
 
-<div style="display: flex; gap: 20px;">
+No additional server configuration is required. The addon will automatically load when Eluna initializes.
 
-<div style="flex: 1;">
+## Usage
 
-### Game Object Types
+### Opening the Interface
 
-To search for game object types, use the syntax `(type)`. Here’s a list of the available types:
+Game Masters can open the interface using:
+```
+/gm
+/gamemaster
+```
 
-| **Game Object Type**    | **Value** |
-| ----------------------- | --------- |
-| `door`                  | 0         |
-| `button`                | 1         |
-| `questgiver`            | 2         |
-| `chest`                 | 3         |
-| `binder`                | 4         |
-| `generic`               | 5         |
-| `trap`                  | 6         |
-| `chair`                 | 7         |
-| `spell focus`           | 8         |
-| `text`                  | 9         |
-| `goober`                | 10        |
-| `transport`             | 11        |
-| `areadamage`            | 12        |
-| `camera`                | 13        |
-| `map object`            | 14        |
-| `mo transport`          | 15        |
-| `duel arbiter`          | 16        |
-| `fishingnode`           | 17        |
-| `summoning ritual`      | 18        |
-| `mailbox`               | 19        |
-| `do not use`            | 20        |
-| `guardpost`             | 21        |
-| `spellcaster`           | 22        |
-| `meetingstone`          | 23        |
-| `flagstand`             | 24        |
-| `fishinghole`           | 25        |
-| `flagdrop`              | 26        |
-| `mini game`             | 27        |
-| `do not use 2`          | 28        |
-| `capture point`         | 29        |
-| `aura generator`        | 30        |
-| `dungeon difficulty`    | 31        |
-| `barber chair`          | 32        |
-| `destructible_building` | 33        |
-| `guild bank`            | 34        |
-| `trapdoor`              | 35        |
+### Permissions
 
-</div>
+The addon automatically checks GM levels:
+- Only accounts with GM level > 0 can access the interface
+- Different features may require different GM levels
 
-<div style="flex: 1;">
+### Key Bindings
 
-### NPC Types
+- **ESC**: Close the current window
+- **Right-Click**: Open context menus on items, NPCs, or players
+- **Left-Click**: Select items or activate buttons
 
-To search for NPC types, use the syntax `(type)`. Here’s a list of the available NPC types:
+## File Structure
 
-| **NPC Type**     | **Value** |
-| ---------------- | --------- |
-| `none`           | 0         |
-| `beast`          | 1         |
-| `dragonkin`      | 2         |
-| `demon`          | 3         |
-| `elemental`      | 4         |
-| `giant`          | 5         |
-| `undead`         | 6         |
-| `humanoid`       | 7         |
-| `critter`        | 8         |
-| `mechanical`     | 9         |
-| `not specified`  | 10        |
-| `totem`          | 11        |
-| `non-combat pet` | 12        |
-| `gas cloud`      | 13        |
-| `wild pet`       | 14        |
-| `aberration`     | 15        |
+```
+GameMasterUI/
+├── GameMasterUIServer.lua      # Main server entry point
+├── Client/                     # Client-side UI files
+│   ├── 00_Core/               # Core functionality
+│   ├── 01_UI/                 # UI framework
+│   ├── 02_Cards/              # Card system for displaying entities
+│   ├── 03_Systems/            # Model viewer and data systems
+│   ├── 04_Menus/              # Context menu system
+│   └── GMClient_09_Init.lua   # Client initialization
+└── Server/                     # Server-side logic
+    ├── Core/                  # Core server functionality
+    ├── Database/              # Database queries
+    └── Handlers/              # AIO message handlers
+```
 
-</div>
+## Troubleshooting
 
-</div>
+### Common Issues
 
-## Example Search Queries
+1. **"You do not have permission to use this command"**
+   - Ensure your account has GM level > 2
+   - Check account permissions in the auth database
 
-- To search for NPCs of type **beast**, use: `(beast)`
-- To search for a **trapdoor** game object, use: `(trapdoor)`
+2. **UI doesn't appear**
+   - Verify AIO is working: `.aio` command should show AIO status
+   - Check server console for Lua errors
+   - Ensure all files are in the correct directories
 
-You can copy and paste these examples directly into your search to get the desired results. Make sure you always enclose the type in parentheses.
+3. **Missing UI elements**
+   - Verify `AIO_UIStyleLibraryClient.lua` is present
+   - Clear WoW cache and reload
+
+
+## Customization
+
+### Adding Custom Context Menu Actions
+
+Edit the appropriate handler file in `Server/Handlers/` to add new actions.
+
+### Modifying UI Layout
+
+UI elements are defined in the `Client/` files. Modify these to change appearance or layout.
+
+### Changing Permissions
+
+Edit `GameMasterUI_Config.lua` to modify required GM levels for different features.
+
+## Support
+
+For issues or questions:
+1. Check the server console for error messages
+2. Review the [AIO Development Guide](../AIO-DEVELOPMENT-GUIDE.md)
+3. Contact the Eluna community on Discord
+
+## Credits
+
+- Built using the AIO framework by Rochet2
+- Uses Eluna Lua Engine for TrinityCore
+- UI styling based on WoW 3.3.5 interface guidelines
