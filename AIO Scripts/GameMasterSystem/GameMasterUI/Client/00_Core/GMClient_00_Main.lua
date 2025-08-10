@@ -26,6 +26,7 @@ _G.GMData = {
     
     -- UI state (current tab reference)
     currentOffset = 0,
+    lastRequestedOffset = 0,  -- Track last requested offset to prevent duplicate requests
     activeTab = 1,
     sortOrder = "DESC",
     currentSearchQuery = "",

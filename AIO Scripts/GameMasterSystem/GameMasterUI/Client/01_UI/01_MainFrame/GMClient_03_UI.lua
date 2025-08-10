@@ -171,15 +171,17 @@ function GMUI.createContentContainer(parent)
         
         if direction == "up" then
             -- Scroll up = Previous page
-            if state.currentOffset > 0 then
-                state.currentOffset = math.max(0, state.currentOffset - state.pageSize)
+            local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
+            if currentOffset > 0 then
+                state.currentOffset = math.max(0, currentOffset - state.pageSize)
                 GMData.currentOffset = state.currentOffset
                 GMUI.requestDataForTab(GMData.activeTab)
             end
         else
             -- Scroll down = Next page
             if state.hasMoreData then
-                state.currentOffset = state.currentOffset + state.pageSize
+                local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
+                state.currentOffset = currentOffset + state.pageSize
                 GMData.currentOffset = state.currentOffset
                 GMUI.requestDataForTab(GMData.activeTab)
             end
@@ -350,7 +352,8 @@ function GMUI.createPaginationControls(parent)
     firstButton:SetPoint("LEFT", container, "LEFT", centerX, 0)
     firstButton:SetScript("OnClick", function()
         local state = GMUtils.GetTabState(GMData.activeTab)
-        if state.currentOffset > 0 then
+        local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
+        if currentOffset > 0 then
             state.currentOffset = 0
             GMData.currentOffset = 0
             GMUI.requestDataForTab(GMData.activeTab)
@@ -362,8 +365,9 @@ function GMUI.createPaginationControls(parent)
     prevButton:SetPoint("LEFT", firstButton, "RIGHT", 10, 0)
     prevButton:SetScript("OnClick", function()
         local state = GMUtils.GetTabState(GMData.activeTab)
-        if state.currentOffset > 0 then
-            state.currentOffset = math.max(0, state.currentOffset - state.pageSize)
+        local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
+        if currentOffset > 0 then
+            state.currentOffset = math.max(0, currentOffset - state.pageSize)
             GMData.currentOffset = state.currentOffset
             GMUI.requestDataForTab(GMData.activeTab)
         end
@@ -422,7 +426,8 @@ function GMUI.createPaginationControls(parent)
     nextButton:SetScript("OnClick", function()
         local state = GMUtils.GetTabState(GMData.activeTab)
         if state.hasMoreData then
-            state.currentOffset = state.currentOffset + state.pageSize
+            local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
+            state.currentOffset = currentOffset + state.pageSize
             GMData.currentOffset = state.currentOffset
             GMUI.requestDataForTab(GMData.activeTab)
         end
@@ -635,9 +640,17 @@ function GMUI.buildDropdownItems()
         }
     }
     
-    -- Sort alphabetically by text
+    -- Sort alphabetically by text (with safe comparison)
     table.sort(allItems, function(a, b)
-        return a.text < b.text
+        -- Use safe string comparison to handle potential table values
+        if GMUtils and GMUtils.safeCompareStrings then
+            return GMUtils.safeCompareStrings(a.text, b.text)
+        else
+            -- Fallback to basic comparison with type checking
+            local textA = type(a.text) == "table" and tostring(a.text[1] or a.text.value or "") or tostring(a.text or "")
+            local textB = type(b.text) == "table" and tostring(b.text[1] or b.text.value or "") or tostring(b.text or "")
+            return textA < textB
+        end
     end)
     
     -- Add sorted items to final list
@@ -939,8 +952,10 @@ function GMUI.updatePaginationButtons()
     local state = GMUtils.GetTabState(GMData.activeTab)
     
     -- Update button states
+    local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
+    
     if GMData.frames.firstButton then
-        if state.currentOffset > 0 then
+        if currentOffset > 0 then
             GMData.frames.firstButton:Enable()
         else
             GMData.frames.firstButton:Disable()
@@ -948,7 +963,7 @@ function GMUI.updatePaginationButtons()
     end
     
     if GMData.frames.prevButton then
-        if state.currentOffset > 0 then
+        if currentOffset > 0 then
             GMData.frames.prevButton:Enable()
         else
             GMData.frames.prevButton:Disable()
@@ -990,14 +1005,16 @@ function GMUI.updatePaginationButtons()
         
         if state.paginationInfo and state.paginationInfo.totalCount and state.paginationInfo.totalCount > 0 then
             local info = state.paginationInfo
+            local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
             text = string.format("Showing %d-%d of %d items", 
-                info.startIndex or (state.currentOffset + 1),
-                info.endIndex or math.min(state.currentOffset + state.pageSize, info.totalCount),
+                info.startIndex or (currentOffset + 1),
+                info.endIndex or math.min(currentOffset + state.pageSize, info.totalCount),
                 info.totalCount
             )
         elseif state.totalCount > 0 then
-            local startIdx = state.currentOffset + 1
-            local endIdx = math.min(state.currentOffset + state.pageSize, state.totalCount)
+            local currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
+            local startIdx = currentOffset + 1
+            local endIdx = math.min(currentOffset + state.pageSize, state.totalCount)
             text = string.format("Showing %d-%d of %d items", startIdx, endIdx, state.totalCount)
         else
             text = string.format("Page %d", state.currentPage)
@@ -1349,7 +1366,8 @@ function GMUI.switchToTab(tabIndex)
     
     -- Restore new tab's state
     local state = GMUtils.GetTabState(tabIndex)
-    GMData.currentOffset = state.currentOffset
+    -- Sanitize currentOffset before assignment
+    GMData.currentOffset = tonumber(GMUtils.safeGetValue(state.currentOffset)) or 0
     GMData.hasMoreData = state.hasMoreData
     GMData.currentSearchQuery = state.searchQuery or ""
     GMData.paginationInfo = state.paginationInfo
@@ -1439,19 +1457,28 @@ function GMUI.requestDataForTab(tabIndex)
     
     -- Get tab state
     local state = GMUtils.GetTabState(tabIndex)
-    local offset = state.currentOffset or 0
-    local pageSize = state.pageSize or GMConfig.config.PAGE_SIZE or 15
+    -- Sanitize numeric values to prevent table comparison errors
+    local offset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(state.currentOffset) or state.currentOffset
+    offset = tonumber(offset) or 0
+    
+    local pageSize = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(state.pageSize) or state.pageSize
+    pageSize = tonumber(pageSize) or GMConfig.config.PAGE_SIZE or 15
+    
     local sortOrder = GMData.sortOrder or "ASC"
     
+    -- Sanitize lastRequestedOffset for comparison
+    local lastRequestedOffset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(GMData.lastRequestedOffset) or GMData.lastRequestedOffset
+    lastRequestedOffset = tonumber(lastRequestedOffset) or 0
+    
     -- Safeguard: Don't request data if we're already at the end and trying to go forward
-    if offset > 0 and offset >= GMData.lastRequestedOffset and not GMData.hasMoreData then
+    if offset > 0 and offset >= lastRequestedOffset and not GMData.hasMoreData then
         if GMConfig.config.debug then
             print("Preventing redundant request - already at end of data")
         end
         return
     end
     
-    -- Store the last requested offset
+    -- Store the last requested offset (as a number)
     GMData.lastRequestedOffset = offset
     
     -- Determine handler based on tab

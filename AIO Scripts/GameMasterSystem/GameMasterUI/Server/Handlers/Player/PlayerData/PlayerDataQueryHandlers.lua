@@ -185,7 +185,9 @@ function PlayerDataQueryHandlers.getPlayerData(player, offset, pageSize, sortOrd
     end
     
     print(string.format("[GameMasterSystem] Sending %d players to client (online only)", #playerData))
-    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", playerData, offset, pageSize, paginationInfo.hasNextPage, paginationInfo)
+    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", 
+        playerData, offset, pageSize, paginationInfo.hasNextPage, 
+        paginationInfo.totalCount, paginationInfo.totalPages, paginationInfo.currentPage)
 end
 
 -- Get offline player data from database
@@ -311,7 +313,9 @@ function PlayerDataQueryHandlers.getOfflinePlayerData(player, offset, pageSize, 
         until not result:NextRow()
     end
     
-    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", playerData, offset, pageSize, paginationInfo.hasNextPage, paginationInfo)
+    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", 
+        playerData, offset, pageSize, paginationInfo.hasNextPage, 
+        paginationInfo.totalCount, paginationInfo.totalPages, paginationInfo.currentPage)
 end
 
 -- Get all players (online and offline)
@@ -477,7 +481,9 @@ function PlayerDataQueryHandlers.getAllPlayerData(player, offset, pageSize, sort
     end
     
     print(string.format("[GameMasterSystem] Sending %d players to client (online + offline)", #paginatedData))
-    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", paginatedData, offset, pageSize, paginationInfo.hasNextPage, paginationInfo)
+    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", 
+        paginatedData, offset, pageSize, paginationInfo.hasNextPage, 
+        paginationInfo.totalCount, paginationInfo.totalPages, paginationInfo.currentPage)
 end
 
 return PlayerDataQueryHandlers

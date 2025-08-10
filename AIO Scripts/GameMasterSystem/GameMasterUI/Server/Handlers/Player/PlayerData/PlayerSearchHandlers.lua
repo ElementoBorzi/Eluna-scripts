@@ -133,7 +133,9 @@ function PlayerSearchHandlers.searchPlayerData(player, query, offset, pageSize, 
     
     -- If no matching players, send empty response
     if paginationInfo.isEmpty then
-        AIO.Handle(player, "GameMasterSystem", "receivePlayerData", {}, offset, pageSize, false, paginationInfo)
+        AIO.Handle(player, "GameMasterSystem", "receivePlayerData", 
+            {}, offset, pageSize, false, 
+            paginationInfo.totalCount, paginationInfo.totalPages, paginationInfo.currentPage)
         return
     end
     
@@ -186,7 +188,9 @@ function PlayerSearchHandlers.searchPlayerData(player, query, offset, pageSize, 
         end
     end
     
-    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", playerData, offset, pageSize, paginationInfo.hasNextPage, paginationInfo)
+    AIO.Handle(player, "GameMasterSystem", "receivePlayerData", 
+        playerData, offset, pageSize, paginationInfo.hasNextPage, 
+        paginationInfo.totalCount, paginationInfo.totalPages, paginationInfo.currentPage)
 end
 
 -- Refresh player data (forces a fresh fetch)

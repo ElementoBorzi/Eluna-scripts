@@ -694,10 +694,22 @@ function PlayerList.SortData(data)
             return false
         end
         
-        if order == "ASC" then
-            return aVal < bVal
+        -- Safe comparison to handle potential table values
+        if type(aVal) == "number" and type(bVal) == "number" then
+            if order == "ASC" then
+                return aVal < bVal
+            else
+                return aVal > bVal
+            end
         else
-            return aVal > bVal
+            -- String comparison (safe for potential table values)
+            local strA = type(aVal) == "table" and tostring(aVal[1] or aVal.value or "") or tostring(aVal or "")
+            local strB = type(bVal) == "table" and tostring(bVal[1] or bVal.value or "") or tostring(bVal or "")
+            if order == "ASC" then
+                return strA < strB
+            else
+                return strA > strB
+            end
         end
     end)
 end

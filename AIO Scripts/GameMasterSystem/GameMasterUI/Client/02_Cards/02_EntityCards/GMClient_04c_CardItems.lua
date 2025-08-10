@@ -92,8 +92,10 @@ function GMCards.createItemCard(card, entity, index)
     card.additionalText:SetPoint("BOTTOM", card.entityText, "TOP", 0, 2)
     card.additionalText:SetText(string.format("iLvl: %d | Quality: %d", itemLevel or 0, quality))
 
-    -- Handle equippable items with model preview
-    if entity.inventoryType and entity.inventoryType > 0 then
+    -- Handle equippable items with model preview (with safe comparison)
+    local inventoryType = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(entity.inventoryType) or entity.inventoryType
+    inventoryType = tonumber(inventoryType) or 0
+    if inventoryType > 0 then
         -- Use small delay to prevent UI freeze
         if GMUtils.delayedExecution then
             GMUtils.delayedExecution(0.01 * math.min(index, 5), function()

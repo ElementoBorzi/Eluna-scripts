@@ -183,7 +183,9 @@ function SpellDataHandlers.getSpellVisualData(player, offset, pageSize, sortOrde
         player:SendBroadcastMessage("No spell visual data available.")
     end
     
-    AIO.Handle(player, "GameMasterSystem", "receiveSpellVisualData", spellVisualData, offset, pageSize, paginationInfo.hasNextPage, paginationInfo)
+    AIO.Handle(player, "GameMasterSystem", "receiveSpellVisualData", 
+        spellVisualData, offset, pageSize, paginationInfo.hasNextPage, 
+        paginationInfo.totalCount, paginationInfo.totalPages, paginationInfo.currentPage)
 end
 
 -- Function to search spell visual data
@@ -235,7 +237,9 @@ function SpellDataHandlers.searchSpellVisualData(player, query, offset, pageSize
         player:SendBroadcastMessage("No spell visual data found for the search query: " .. query)
     end
     
-    AIO.Handle(player, "GameMasterSystem", "receiveSpellVisualData", spellVisualData, offset, pageSize, hasMoreData, paginationInfo)
+    AIO.Handle(player, "GameMasterSystem", "receiveSpellVisualData", 
+        spellVisualData, offset, pageSize, hasMoreData, 
+        paginationInfo.totalCount or -1, paginationInfo.totalPages or 1, paginationInfo.currentPage or 1)
 end
 
 -- Handler for searching spells from database

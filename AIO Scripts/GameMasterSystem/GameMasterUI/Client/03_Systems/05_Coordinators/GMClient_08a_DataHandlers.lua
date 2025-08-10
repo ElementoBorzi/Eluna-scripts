@@ -43,6 +43,40 @@ function GameMasterSystem.receiveItemData(player, data, offset, pageSize, hasMor
         GMData.DataStore = {}
     end
 
+    -- Sanitize item data to handle potential table wrapping from AIO
+    if data and type(data) == "table" then
+        for _, item in ipairs(data) do
+            if item then
+                -- Ensure numeric fields are actually numbers
+                if item.inventoryType then
+                    item.inventoryType = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(item.inventoryType) or item.inventoryType
+                    item.inventoryType = tonumber(item.inventoryType) or 0
+                end
+                if item.quality then
+                    item.quality = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(item.quality) or item.quality
+                    item.quality = tonumber(item.quality) or 0
+                end
+                if item.itemLevel then
+                    item.itemLevel = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(item.itemLevel) or item.itemLevel
+                    item.itemLevel = tonumber(item.itemLevel) or 0
+                end
+                if item.entry then
+                    item.entry = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(item.entry) or item.entry
+                    item.entry = tonumber(item.entry) or 0
+                end
+                -- Ensure string fields are actually strings
+                if item.name then
+                    item.name = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(item.name) or item.name
+                    item.name = tostring(item.name or "")
+                end
+                if item.description then
+                    item.description = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(item.description) or item.description
+                    item.description = tostring(item.description or "")
+                end
+            end
+        end
+    end
+
     GMData.DataStore.items = data
     
     -- Build pagination info from individual parameters
@@ -58,8 +92,12 @@ function GameMasterSystem.receiveItemData(player, data, offset, pageSize, hasMor
         }
     end
     
+    -- Sanitize offset before updating pagination
+    local sanitizedOffset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(offset) or offset
+    sanitizedOffset = tonumber(sanitizedOffset) or 0
+    
     -- Update pagination state for current tab
-    GMUtils.UpdateTabPagination(GMData.activeTab, offset, pageSize, hasMoreData, paginationInfo)
+    GMUtils.UpdateTabPagination(GMData.activeTab, sanitizedOffset, pageSize, hasMoreData, paginationInfo)
     
     -- Sync with global state
     GMData.currentOffset = offset or 0
@@ -104,8 +142,12 @@ function GameMasterSystem.receiveNPCData(player, data, offset, pageSize, hasMore
 
     GMData.DataStore.npcs = data
     
+    -- Sanitize offset before updating pagination
+    local sanitizedOffset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(offset) or offset
+    sanitizedOffset = tonumber(sanitizedOffset) or 0
+    
     -- Update pagination state for current tab
-    GMUtils.UpdateTabPagination(GMData.activeTab, offset, pageSize, hasMoreData, paginationInfo)
+    GMUtils.UpdateTabPagination(GMData.activeTab, sanitizedOffset, pageSize, hasMoreData, paginationInfo)
     
     -- Sync with global state
     GMData.currentOffset = offset or 0
@@ -150,8 +192,12 @@ function GameMasterSystem.receiveGameObjectData(player, data, offset, pageSize, 
         }
     end
     
+    -- Sanitize offset before updating pagination
+    local sanitizedOffset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(offset) or offset
+    sanitizedOffset = tonumber(sanitizedOffset) or 0
+    
     -- Update pagination state for current tab
-    GMUtils.UpdateTabPagination(GMData.activeTab, offset, pageSize, hasMoreData, paginationInfo)
+    GMUtils.UpdateTabPagination(GMData.activeTab, sanitizedOffset, pageSize, hasMoreData, paginationInfo)
     
     -- Sync with global state
     GMData.currentOffset = offset or 0
@@ -181,10 +227,40 @@ function GameMasterSystem.receiveSpellData(player, data, offset, pageSize, hasMo
         GMData.DataStore = {}
     end
 
+    -- Sanitize spell data to handle potential table wrapping from AIO
+    if data and type(data) == "table" then
+        for _, spell in ipairs(data) do
+            if spell then
+                -- Ensure numeric fields are actually numbers
+                if spell.id then
+                    spell.id = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(spell.id) or spell.id
+                    spell.id = tonumber(spell.id) or 0
+                end
+                if spell.visual then
+                    spell.visual = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(spell.visual) or spell.visual
+                    spell.visual = tonumber(spell.visual) or 0
+                end
+                -- Ensure string fields are actually strings
+                if spell.name then
+                    spell.name = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(spell.name) or spell.name
+                    spell.name = tostring(spell.name or "")
+                end
+                if spell.description then
+                    spell.description = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(spell.description) or spell.description
+                    spell.description = tostring(spell.description or "")
+                end
+            end
+        end
+    end
+
     GMData.DataStore.spells = data
     
+    -- Sanitize offset before updating pagination
+    local sanitizedOffset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(offset) or offset
+    sanitizedOffset = tonumber(sanitizedOffset) or 0
+    
     -- Update pagination state for current tab
-    GMUtils.UpdateTabPagination(GMData.activeTab, offset, pageSize, hasMoreData, paginationInfo)
+    GMUtils.UpdateTabPagination(GMData.activeTab, sanitizedOffset, pageSize, hasMoreData, paginationInfo)
     
     -- Sync with global state
     GMData.currentOffset = offset or 0
@@ -229,8 +305,12 @@ function GameMasterSystem.receiveSpellVisualData(player, data, offset, pageSize,
         }
     end
     
+    -- Sanitize offset before updating pagination
+    local sanitizedOffset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(offset) or offset
+    sanitizedOffset = tonumber(sanitizedOffset) or 0
+    
     -- Update pagination state for current tab
-    GMUtils.UpdateTabPagination(GMData.activeTab, offset, pageSize, hasMoreData, paginationInfo)
+    GMUtils.UpdateTabPagination(GMData.activeTab, sanitizedOffset, pageSize, hasMoreData, paginationInfo)
     
     -- Sync with global state
     GMData.currentOffset = offset or 0
@@ -276,8 +356,12 @@ function GameMasterSystem.receivePlayerData(player, data, offset, pageSize, hasM
         }
     end
     
+    -- Sanitize offset before updating pagination
+    local sanitizedOffset = GMUtils and GMUtils.safeGetValue and GMUtils.safeGetValue(offset) or offset
+    sanitizedOffset = tonumber(sanitizedOffset) or 0
+    
     -- Update pagination state for current tab
-    GMUtils.UpdateTabPagination(GMData.activeTab, offset, pageSize, hasMoreData, paginationInfo)
+    GMUtils.UpdateTabPagination(GMData.activeTab, sanitizedOffset, pageSize, hasMoreData, paginationInfo)
     
     -- Sync with global state
     GMData.currentOffset = offset or 0
