@@ -128,7 +128,7 @@ removeFromWorld = true,     -- Remove entities from world on delete
 
 ## Required Dependencies
 
-1. **UIStyleLibrary** - [PLACEHOLDER_LINK]
+1. **UIStyleLibrary** - [GitHub Repository](https://github.com/Isidorsson/Eluna-scripts/tree/master/AIO%20Scripts/00_UIStyleLibrary)
    - Must be in `AIO_Server/00_UIStyleLibrary/`
    - Provides all UI components and styling
 
