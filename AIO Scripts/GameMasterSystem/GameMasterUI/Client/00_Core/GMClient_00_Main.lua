@@ -24,12 +24,15 @@ _G.GMData = {
     isGmLevelFetched = false,
     isCoreNameFetched = false,
     
-    -- UI state
+    -- UI state (current tab reference)
     currentOffset = 0,
     activeTab = 1,
-    sortOrder = "ASC",
+    sortOrder = "DESC",
     currentSearchQuery = "",
     hasMoreData = false,
+    
+    -- Per-tab pagination states
+    tabStates = {},
     
     -- UI references (will be populated by UI module)
     frames = {},

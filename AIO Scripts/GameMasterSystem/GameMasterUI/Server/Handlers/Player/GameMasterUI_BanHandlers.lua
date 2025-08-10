@@ -14,7 +14,7 @@
 local BanHandlers = {}
 
 -- Module dependencies (will be injected)
-local GameMasterSystem, Config, Utils, Database
+local GameMasterSystem, Config, Utils, Database, DatabaseHelper
 
 -- Ban type constants
 local BAN_TYPE = {
@@ -30,11 +30,12 @@ local BAN_TYPE_LABELS = {
     [2] = "IP"
 }
 
-function BanHandlers.RegisterHandlers(gms, config, utils, database)
+function BanHandlers.RegisterHandlers(gms, config, utils, database, dbHelper)
     GameMasterSystem = gms
     Config = config
     Utils = utils
     Database = database
+    DatabaseHelper = dbHelper
     
     -- Register all ban-related handlers
     GameMasterSystem.banPlayer = BanHandlers.banPlayer

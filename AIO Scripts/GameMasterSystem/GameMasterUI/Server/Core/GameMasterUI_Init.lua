@@ -3,7 +3,11 @@ local queriesModule = require("GameMasterUI.Server.Database.GameMasterUI_Databas
 local getQuery = queriesModule.getQuery
 local configModule = require("GameMasterUI.Server.Core.GameMasterUI_Config")
 local config = configModule
+local DatabaseHelper = require("GameMasterUI.Server.Core.GameMasterUI_DatabaseHelper")
 local debug = require("debug")
+
+-- Initialize DatabaseHelper
+DatabaseHelper.Initialize(config)
 
 
 
@@ -18,9 +22,16 @@ local DEFAULT_FLAGS = 0
 
 local function LoadCreatureDisplays()
 	local coreName = GetCoreName()
-	local query = getQuery(coreName, "loadCreatureDisplays")()
+	local queryFunc = getQuery(coreName, "loadCreatureDisplays")
+	
+	if not queryFunc then
+		if config.debug then
+			print("[GameMasterUI] LoadCreatureDisplays query not found for core: " .. coreName)
+		end
+		return
+	end
 
-	local result = WorldDBQuery(query)
+	local result, queryError = DatabaseHelper.SafeQuery(queryFunc(), "world")
 
 	if result then
 		repeat
@@ -59,7 +70,10 @@ local function LoadCreatureDisplays()
 	else
 		if config.debug then
 			local fileName = debug.getinfo(1).source
-			print("Error loading creature displays from database in file: " .. fileName)
+			print(string.format("[GameMasterUI] Error loading creature displays from database in file: %s", fileName))
+			if queryError then
+				print(string.format("[GameMasterUI] Database error: %s", queryError))
+			end
 		end
 	end
 end

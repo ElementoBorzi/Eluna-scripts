@@ -305,4 +305,96 @@ function GMUtils.fadeOut(frame, duration, hideOnComplete)
     end)
 end
 
+-- Tab state management utilities
+function GMUtils.GetTabState(tabIndex)
+    if not tabIndex then return nil end
+    
+    -- Create state if it doesn't exist
+    if not GMData.tabStates[tabIndex] then
+        GMData.tabStates[tabIndex] = {
+            currentOffset = 0,
+            currentPage = 1,
+            totalPages = 1,
+            totalCount = 0,
+            pageSize = GMConfig.config.PAGE_SIZE or 15,
+            hasMoreData = false,
+            searchQuery = "",
+            paginationInfo = nil
+        }
+    end
+    
+    return GMData.tabStates[tabIndex]
+end
+
+function GMUtils.ResetTabState(tabIndex)
+    if not tabIndex then return end
+    
+    GMData.tabStates[tabIndex] = {
+        currentOffset = 0,
+        currentPage = 1,
+        totalPages = 1,
+        totalCount = 0,
+        pageSize = GMConfig.config.PAGE_SIZE or 15,
+        hasMoreData = false,
+        searchQuery = "",
+        paginationInfo = nil
+    }
+end
+
+function GMUtils.UpdateTabPagination(tabIndex, offset, pageSize, hasMoreData, paginationInfo)
+    if not tabIndex then return end
+    
+    local state = GMUtils.GetTabState(tabIndex)
+    
+    -- Update basic values
+    state.currentOffset = offset or state.currentOffset
+    state.pageSize = pageSize or state.pageSize
+    state.hasMoreData = hasMoreData or false
+    
+    -- Update from pagination info if provided
+    if paginationInfo then
+        state.paginationInfo = paginationInfo
+        state.totalCount = paginationInfo.totalCount or 0
+        state.totalPages = paginationInfo.totalPages or 1
+        state.currentPage = paginationInfo.currentPage or 1
+        state.hasMoreData = paginationInfo.hasNextPage or false
+    else
+        -- Calculate current page from offset
+        state.currentPage = math.floor(state.currentOffset / state.pageSize) + 1
+    end
+    
+    -- Sync with global state if this is the active tab
+    if tabIndex == GMData.activeTab then
+        GMData.currentOffset = state.currentOffset
+        GMData.hasMoreData = state.hasMoreData
+        GMData.paginationInfo = state.paginationInfo
+    end
+end
+
+function GMUtils.GoToPage(tabIndex, pageNumber)
+    if not tabIndex or not pageNumber then return false end
+    
+    local state = GMUtils.GetTabState(tabIndex)
+    pageNumber = tonumber(pageNumber)
+    
+    if not pageNumber or pageNumber < 1 then return false end
+    
+    -- Don't allow going beyond known pages (unless we don't know total)
+    if state.totalCount > 0 and pageNumber > state.totalPages then
+        return false
+    end
+    
+    -- Calculate new offset
+    local newOffset = (pageNumber - 1) * state.pageSize
+    state.currentOffset = newOffset
+    state.currentPage = pageNumber
+    
+    -- Sync with global state if this is the active tab
+    if tabIndex == GMData.activeTab then
+        GMData.currentOffset = state.currentOffset
+    end
+    
+    return true
+end
+
 -- Utilities loaded
