@@ -19,8 +19,9 @@ local GMConfig = _G.GMConfig
 
 -- Main configuration object
 GMConfig.config = {
-    debug = true, -- Set to true for debugging model loading (TEMPORARY - set to false in production)
+    debug = false, -- Set to true for debugging model loading (TEMPORARY - set to false in production)
     REQUIRED_GM_LEVEL = 2,
+    autoOpenObjectEditor = true, -- Auto-open editor after spawning GameObject
     
     -- Legacy properties for backward compatibility
     BG_WIDTH = 900,
@@ -149,46 +150,46 @@ GMConfig.CardTypes = {
             Equipment = {
                 tabIndex = 100,
                 subCategories = {
-                    { index = 101, value = 4, name = "Cloth" },
-                    { index = 102, value = 3, name = "Leather" },
-                    { index = 103, value = 2, name = "Mail" },
-                    { index = 104, value = 1, name = "Plate" },
-                    { index = 105, value = 6, name = "Shields" },
-                    { index = 106, value = 7, name = "Librams" },
-                    { index = 107, value = 8, name = "Idols" },
-                    { index = 108, value = 9, name = "Totems" },
-                    { index = 109, value = 10, name = "Sigils" },
+                    { index = 101, value = 1, name = "Head" },
+                    { index = 102, value = 2, name = "Neck" },
+                    { index = 103, value = 3, name = "Shoulder" },
+                    { index = 104, value = 5, name = "Chest" },
+                    { index = 105, value = 6, name = "Waist" },
+                    { index = 106, value = 7, name = "Legs" },
+                    { index = 107, value = 8, name = "Feet" },
+                    { index = 108, value = 9, name = "Wrist" },
+                    { index = 109, value = 10, name = "Hands" },
+                    { index = 110, value = 11, name = "Finger" },
+                    { index = 111, value = 12, name = "Trinket" },
+                    { index = 112, value = 16, name = "Back" },
                 },
             },
             Weapons = {
                 tabIndex = 200,
                 subCategories = {
-                    { index = 201, value = 13, name = "One-Handed Axes" },
-                    { index = 202, value = 14, name = "Two-Handed Axes" },
-                    { index = 203, value = 15, name = "Bows" },
-                    { index = 204, value = 16, name = "Guns" },
-                    { index = 205, value = 17, name = "One-Handed Maces" },
-                    { index = 206, value = 18, name = "Two-Handed Maces" },
-                    { index = 207, value = 19, name = "Polearms" },
-                    { index = 208, value = 20, name = "One-Handed Swords" },
-                    { index = 209, value = 21, name = "Two-Handed Swords" },
-                    { index = 210, value = 22, name = "Staves" },
-                    { index = 211, value = 25, name = "Thrown" },
-                    { index = 212, value = 26, name = "Crossbows" },
-                    { index = 213, value = 27, name = "Wands" },
-                    { index = 214, value = 28, name = "Fishing Poles" },
+                    { index = 201, value = 13, name = "One-Hand" },
+                    { index = 202, value = 17, name = "Two-Hand" },
+                    { index = 203, value = 21, name = "Main Hand" },
+                    { index = 204, value = 22, name = "Off Hand" },
+                    { index = 205, value = 14, name = "Shield" },
+                    { index = 206, value = 15, name = "Ranged" },
+                    { index = 207, value = 25, name = "Thrown" },
+                    { index = 208, value = 26, name = "Ranged Right" },
+                    { index = 209, value = 23, name = "Holdable" },
                 },
             },
             Misc = {
                 tabIndex = 300,
                 subCategories = {
-                    { index = 301, value = 0, name = "Consumables" },
-                    { index = 302, value = 5, name = "Reagents" },
-                    { index = 303, value = 11, name = "Quiver" },
-                    { index = 304, value = 12, name = "Quest Items" },
-                    { index = 305, value = 23, name = "Keys" },
-                    { index = 306, value = 24, name = "Permanent" },
-                    { index = 307, value = -1, name = "All Items" },
+                    { index = 301, value = 0, name = "Non-equip" },
+                    { index = 302, value = 4, name = "Shirt" },
+                    { index = 303, value = 18, name = "Bag" },
+                    { index = 304, value = 19, name = "Tabard" },
+                    { index = 305, value = 20, name = "Robe" },
+                    { index = 306, value = 24, name = "Ammo" },
+                    { index = 307, value = 28, name = "Quiver" },
+                    { index = 308, value = 29, name = "Relic" },
+                    { index = 309, value = -1, name = "All Items" },
                 },
             },
         },
@@ -299,14 +300,13 @@ GMConfig.BUFF_CONFIG = {
     
     -- GM special buffs
     GM_SPECIAL = {
-        { spellId = 35182, name = "GM Invisibility", icon = "Interface\\Icons\\Spell_Nature_Invisibilty" },
-        { spellId = 1787, name = "Stealth", icon = "Interface\\Icons\\Ability_Stealth" },
-        { spellId = 66, name = "Invisibility", icon = "Interface\\Icons\\Spell_Magic_LesserInvisibilty" },
-        { spellId = 32612, name = "Invisibility (Mage)", icon = "Interface\\Icons\\Spell_Magic_LesserInvisibilty" },
+        { spellId = 1784, name = "Stealth (Rogue)", icon = "Interface\\Icons\\Ability_Stealth" },
+        { spellId = 1856, name = "Vanish (Improved Stealth)", icon = "Interface\\Icons\\Ability_Vanish" },
+        { spellId = 11392, name = "Invisibility (18 sec)", icon = "Interface\\Icons\\Spell_Magic_LesserInvisibilty" },
         { spellId = 9454, name = "GM Freeze", icon = "Interface\\Icons\\Spell_Frost_FreezingBreath" },
         { spellId = 1499, name = "Freezing Trap", icon = "Interface\\Icons\\Spell_Frost_ChainsOfIce" },
         { spellId = 11, name = "Frost Armor", icon = "Interface\\Icons\\Spell_Frost_FrostArmor02" },
-        { spellId = 22782, name = "GM Speed", icon = "Interface\\Icons\\Spell_Holy_BlessingOfAgility" },
+        { spellId = 23451, name = "Speed (100% increase)", icon = "Interface\\Icons\\Spell_Holy_BlessingOfAgility" },
     },
     
     -- Healing spells that can be cast

@@ -122,6 +122,13 @@ local EntityHandlers = {
 
 		if gob then
 			utils.sendMessage(player, "success", "Successfully spawned GameObject with ID: " .. entry)
+			
+			-- Hook for ObjectEditor - send object data to client
+			local ObjectEditorHandlers = require("GameMasterUI.Server.Handlers.Entity.GameMasterUI_ObjectEditorHandlers")
+			if ObjectEditorHandlers and ObjectEditorHandlers.onGameObjectSpawn then
+				ObjectEditorHandlers.onGameObjectSpawn(player, gob)
+			end
+			
 			return gob
 		else
 			utils.sendMessage(player, "error", "Failed to spawn GameObject with ID: " .. entry)
@@ -135,7 +142,7 @@ local EntityHandlers = {
 			return
 		end
 
-		local gob = player:GetNearObject(100, 3, entry)
+		local gob = player:GetNearObject(100, 3, tonumber(entry))
 
 		if gob then
 			gob:RemoveFromWorld(config.removeFromWorld)

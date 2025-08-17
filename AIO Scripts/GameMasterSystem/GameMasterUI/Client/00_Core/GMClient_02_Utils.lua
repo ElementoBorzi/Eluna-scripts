@@ -305,4 +305,162 @@ function GMUtils.fadeOut(frame, duration, hideOnComplete)
     end)
 end
 
+-- Tab state management utilities
+function GMUtils.GetTabState(tabIndex)
+    if not tabIndex then return nil end
+    
+    -- Create state if it doesn't exist
+    if not GMData.tabStates[tabIndex] then
+        GMData.tabStates[tabIndex] = {
+            currentOffset = 0,
+            currentPage = 1,
+            totalPages = 1,
+            totalCount = 0,
+            pageSize = GMConfig.config.PAGE_SIZE or 15,
+            hasMoreData = false,
+            searchQuery = "",
+            paginationInfo = nil
+        }
+    end
+    
+    return GMData.tabStates[tabIndex]
+end
+
+function GMUtils.ResetTabState(tabIndex)
+    if not tabIndex then return end
+    
+    GMData.tabStates[tabIndex] = {
+        currentOffset = 0,
+        currentPage = 1,
+        totalPages = 1,
+        totalCount = 0,
+        pageSize = GMConfig.config.PAGE_SIZE or 15,
+        hasMoreData = false,
+        searchQuery = "",
+        paginationInfo = nil
+    }
+end
+
+function GMUtils.UpdateTabPagination(tabIndex, offset, pageSize, hasMoreData, paginationInfo)
+    if not tabIndex then return end
+    
+    local state = GMUtils.GetTabState(tabIndex)
+    
+    -- Sanitize numeric values to handle potential table wrapping from AIO
+    local sanitizedOffset = offset and GMUtils.safeGetValue(offset) or state.currentOffset
+    sanitizedOffset = tonumber(sanitizedOffset) or 0
+    
+    local sanitizedPageSize = pageSize and GMUtils.safeGetValue(pageSize) or state.pageSize
+    sanitizedPageSize = tonumber(sanitizedPageSize) or 15
+    
+    -- Update basic values with sanitized data
+    state.currentOffset = sanitizedOffset
+    state.pageSize = sanitizedPageSize
+    state.hasMoreData = hasMoreData or false
+    
+    -- Update from pagination info if provided
+    if paginationInfo then
+        -- Sanitize pagination info values
+        state.paginationInfo = paginationInfo
+        state.totalCount = tonumber(GMUtils.safeGetValue(paginationInfo.totalCount)) or 0
+        state.totalPages = tonumber(GMUtils.safeGetValue(paginationInfo.totalPages)) or 1
+        state.currentPage = tonumber(GMUtils.safeGetValue(paginationInfo.currentPage)) or 1
+        state.hasMoreData = paginationInfo.hasNextPage or false
+    else
+        -- Calculate current page from sanitized offset
+        state.currentPage = math.floor(sanitizedOffset / sanitizedPageSize) + 1
+    end
+    
+    -- Sync with global state if this is the active tab (use sanitized values)
+    if tabIndex == GMData.activeTab then
+        GMData.currentOffset = sanitizedOffset
+        GMData.hasMoreData = state.hasMoreData
+        GMData.paginationInfo = state.paginationInfo
+    end
+end
+
+function GMUtils.GoToPage(tabIndex, pageNumber)
+    if not tabIndex or not pageNumber then return false end
+    
+    local state = GMUtils.GetTabState(tabIndex)
+    pageNumber = tonumber(pageNumber)
+    
+    if not pageNumber or pageNumber < 1 then return false end
+    
+    -- Don't allow going beyond known pages (unless we don't know total)
+    if state.totalCount > 0 and pageNumber > state.totalPages then
+        return false
+    end
+    
+    -- Calculate new offset
+    local newOffset = (pageNumber - 1) * state.pageSize
+    state.currentOffset = newOffset
+    state.currentPage = pageNumber
+    
+    -- Sync with global state if this is the active tab
+    if tabIndex == GMData.activeTab then
+        GMData.currentOffset = state.currentOffset
+    end
+    
+    return true
+end
+
+-- Safe value extraction utilities
+-- These functions handle cases where AIO serialization might wrap values in tables
+function GMUtils.safeGetValue(value)
+    -- If value is a table, try to extract the actual value
+    if type(value) == "table" then
+        -- Check for common AIO serialization patterns
+        if value[1] ~= nil then
+            return value[1]  -- Array-like table, get first element
+        elseif value.value ~= nil then
+            return value.value  -- Object with 'value' property
+        elseif value.data ~= nil then
+            return value.data  -- Object with 'data' property
+        else
+            -- Try to get the first value in the table
+            for _, v in pairs(value) do
+                return v  -- Return first value found
+            end
+        end
+    end
+    return value  -- Return as-is if not a table
+end
+
+-- Safe numeric comparison
+function GMUtils.safeCompareNumbers(a, b, operator)
+    local valA = GMUtils.safeGetValue(a)
+    local valB = GMUtils.safeGetValue(b)
+    
+    -- Convert to numbers if possible
+    valA = tonumber(valA) or 0
+    valB = tonumber(valB) or 0
+    
+    if operator == "<" then
+        return valA < valB
+    elseif operator == ">" then
+        return valA > valB
+    elseif operator == "<=" then
+        return valA <= valB
+    elseif operator == ">=" then
+        return valA >= valB
+    elseif operator == "==" then
+        return valA == valB
+    else
+        return false
+    end
+end
+
+-- Safe string comparison
+function GMUtils.safeCompareStrings(a, b)
+    local valA = GMUtils.safeGetValue(a)
+    local valB = GMUtils.safeGetValue(b)
+    
+    -- Convert to strings
+    valA = tostring(valA or "")
+    valB = tostring(valB or "")
+    
+    return valA < valB
+end
+
 -- Utilities loaded

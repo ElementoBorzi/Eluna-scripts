@@ -9,7 +9,7 @@
         - GameMasterUIServer.lua (this file) - Main entry point
     /Core/
         - GameMasterUI_Config.lua - Configuration and constants
-        - GameMasterUI_Utils.lua - Utility functions
+        - GameMasterUI_Utils.lua - Utility functions (includes shared data tables)
         - GameMasterUI_Init.lua - Initialization and events
     - Server/Database/
         - GameMasterUI_Database.lua - Database queries
@@ -18,8 +18,12 @@
         - GameMasterUI_ItemHandlers.lua - Item-related handlers
         - GameMasterUI_NPCHandlers.lua - NPC-related handlers
     - Server/Handlers/Player/
-        - GameMasterUI_PlayerHandlers.lua - Player management handlers
-        - GameMasterUI_SpellHandlers.lua - Spell-related handlers
+        - GameMasterUI_PlayerHandlers.lua - Core player management (959 lines)
+        - GameMasterUI_PlayerSpellHandlers.lua - Spell management (968 lines)
+        - GameMasterUI_PlayerInventoryHandlers.lua - Inventory management (847 lines)
+        - GameMasterUI_PlayerMailHandlers.lua - Mail sending (191 lines)
+        - GameMasterUI_PlayerBuffHandlers.lua - Buff/aura management (310 lines)
+        - GameMasterUI_BanHandlers.lua - Ban management (457 lines)
 ]]--
 
 -- Add the server directory to the package path
@@ -33,8 +37,12 @@ local AIO = AIO or require("AIO")
 -- Load modules in dependency order
 local Config = require("GameMasterUI.Server.Core.GameMasterUI_Config")
 local Utils = require("GameMasterUI.Server.Core.GameMasterUI_Utils")
+local DatabaseHelper = require("GameMasterUI.Server.Core.GameMasterUI_DatabaseHelper")
 local Database = require("GameMasterUI.Server.Database.GameMasterUI_Database")
 local EntityHandlers = require("GameMasterUI.Server.Handlers.Entity.GameMasterUI_EntityHandlers")
+
+-- Initialize DatabaseHelper
+DatabaseHelper.Initialize(Config)
 
 -- Initialize AIO handlers namespace
 local GameMasterSystem = AIO.AddHandlers("GameMasterSystem", {})
@@ -42,16 +50,54 @@ local GameMasterSystem = AIO.AddHandlers("GameMasterSystem", {})
 -- Load handler modules that will populate GameMasterSystem
 local ItemHandlers = require("GameMasterUI.Server.Handlers.Entity.GameMasterUI_ItemHandlers")
 local NPCHandlers = require("GameMasterUI.Server.Handlers.Entity.GameMasterUI_NPCHandlers")
-local SpellHandlers = require("GameMasterUI.Server.Handlers.Player.GameMasterUI_SpellHandlers")
+
+-- Load player-related handler modules
 local PlayerHandlers = require("GameMasterUI.Server.Handlers.Player.GameMasterUI_PlayerHandlers")
+local PlayerSpellHandlers = require("GameMasterUI.Server.Handlers.Player.GameMasterUI_PlayerSpellHandlers")
+local PlayerInventoryHandlers = require("GameMasterUI.Server.Handlers.Player.GameMasterUI_PlayerInventoryHandlers")
+local PlayerMailHandlers = require("GameMasterUI.Server.Handlers.Player.GameMasterUI_PlayerMailHandlers")
+local PlayerBuffHandlers = require("GameMasterUI.Server.Handlers.Player.GameMasterUI_PlayerBuffHandlers")
 local BanHandlers = require("GameMasterUI.Server.Handlers.Player.GameMasterUI_BanHandlers")
 
+-- Load GM Powers handler module
+local GMPowersHandlers = require("GameMasterUI.Server.Handlers.GMPowers.GameMasterUI_GMPowersHandlers")
+
+-- Load Teleport handler module
+local TeleportHandlers = require("GameMasterUI.Server.Handlers.Teleport.GameMasterUI_TeleportHandlers")
+
+-- Load ObjectEditor handler module
+local ObjectEditorHandlers = require("GameMasterUI.Server.Handlers.Entity.GameMasterUI_ObjectEditorHandlers")
+
 -- Set up the handlers
-ItemHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database)
-NPCHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database)
-SpellHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database)
-PlayerHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, EntityHandlers)
-BanHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database)
+ItemHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+NPCHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+
+-- Register player-related handlers
+PlayerHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, EntityHandlers, DatabaseHelper)
+PlayerSpellHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+PlayerInventoryHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper, PlayerHandlers)
+PlayerMailHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+PlayerBuffHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+BanHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+
+-- Register GM Powers handlers
+GMPowersHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+
+-- Register Teleport handlers
+TeleportHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+
+-- Register ObjectEditor handlers
+ObjectEditorHandlers.RegisterHandlers(GameMasterSystem, Config, Utils, Database, DatabaseHelper)
+
+-- Set cross-references between player sub-modules
+if PlayerHandlers.SetSubModules then
+    PlayerHandlers.SetSubModules(PlayerSpellHandlers, PlayerInventoryHandlers, PlayerMailHandlers, PlayerBuffHandlers)
+end
+
+-- Set cross-references between handlers after all are loaded
+if ItemHandlers.SetPlayerHandlers then
+    ItemHandlers.SetPlayerHandlers(PlayerHandlers)
+end
 
 -- Additional core handlers
 function GameMasterSystem.handleGMLevel(player)

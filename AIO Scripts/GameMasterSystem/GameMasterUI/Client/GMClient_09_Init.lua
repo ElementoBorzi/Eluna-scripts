@@ -24,6 +24,10 @@ local GMMenus = _G.GMMenus
 local GMModels = _G.GMModels
 local GMDataHandler = _G.GMDataHandler
 
+-- ObjectEditor modules are loaded automatically by AIO
+-- They contain AIO.AddAddon() checks and will initialize themselves
+local ObjectEditor = _G.ObjectEditor
+
 -- Login handler
 local function OnLogin(event, player)
     GMUtils.debug("Player login detected")
@@ -114,12 +118,47 @@ local function OnCommand(msg, player)
         _G.GM_DEBUG = not _G.GM_DEBUG
         GMConfig.config.debug = _G.GM_DEBUG
         print("|cff00ff00GameMaster debug mode:|r", _G.GM_DEBUG and "|cff00ff00ON|r" or "|cffff0000OFF|r")
+    elseif msg == "objtest" then
+        -- Test ObjectEditor
+        print("|cff00ff00Testing ObjectEditor...|r")
+        print("ObjectEditor loaded:", _G.ObjectEditor and "Yes" or "No")
+        if _G.ObjectEditor then
+            print("- OpenEditor function:", _G.ObjectEditor.OpenEditor and "Yes" or "No")
+            print("- CreateEditorModal function:", _G.ObjectEditor.CreateEditorModal and "Yes" or "No")
+        end
+        print("EntityMenus loaded:", _G.EntityMenus and "Yes" or "No")
+        if _G.EntityMenus then
+            print("- updateNearbyObjectsMenu function:", _G.EntityMenus.updateNearbyObjectsMenu and "Yes" or "No")
+            print("- nearbyObjectsMenu table:", _G.EntityMenus.nearbyObjectsMenu and "Yes" or "No")
+        end
+        -- Request nearby objects
+        print("|cffffcc00Requesting nearby objects...|r")
+        AIO.Handle("GameMasterSystem", "getNearbyGameObjects", 30)
+    elseif msg == "objedit" then
+        -- Test opening editor with mock data
+        print("|cff00ff00Testing ObjectEditor.OpenEditor with mock data...|r")
+        if _G.ObjectEditor and _G.ObjectEditor.OpenEditor then
+            local mockData = {
+                guid = 12345,
+                entry = 244606,
+                x = 100,
+                y = 200,
+                z = 50,
+                o = 0,
+                scale = 1.0
+            }
+            _G.ObjectEditor.OpenEditor(mockData)
+            print("|cff00ff00Editor should be open now!|r")
+        else
+            print("|cffff0000ObjectEditor.OpenEditor not found!|r")
+        end
     elseif msg == "help" then
         print("|cff00ff00GameMaster UI Commands:|r")
         print("  |cffffcc00/gm|r or |cffffcc00/gamemaster|r - Toggle the UI")
         if GMData.gmLevel >= 3 then
             print("  |cffffcc00/gm reload|r - Reload the UI")
             print("  |cffffcc00/gm debug|r - Toggle debug mode")
+            print("  |cffffcc00/gm objtest|r - Test ObjectEditor system")
         end
         print("  |cffffcc00/gm help|r - Show this help")
     else
